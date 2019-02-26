@@ -7,12 +7,12 @@ exports.postAddTask = async (req, res, next) => {
     const startTime = new Date().toISOString();
     
     try {
-        const project = await Project.findOne({ name: projectName });
+        let project = await Project.findOne({ name: projectName });
         if (!project) {
             // create new project
             project = new Project({
                 name: projectName,
-                color: 'blue', //HARD-CODED
+                color: '#' + Math.floor(Math.random()*16777215).toString(16),
                 user: req.user._id            
             })
             const newProject = await project.save();
