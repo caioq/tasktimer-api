@@ -62,6 +62,30 @@ exports.getTasks = async (req, res, next) => {
     }
 };
 
+exports.getRunningTask = async (req, res, next) => {
+    const userid = req.params.userid;
+    if(!userid) {
+        const error = new Error('Usuário não encontrado.');
+        error.statusCode = 400;
+        throw error;
+    }
+    try{        
+        const task = await Task.findOne({ user: userid, endTime: null }).populate('project');    
+        let taskObj = task.toObject();
+        const currentTime = new Date();
+        const startTimeDate = new Date(task.startTime);
+        taskObj.timer =  Math.round(currentTime.getTime() / 1000) - Math.round(startTimeDate.getTime() / 1000);
+        console.log(taskObj.timer);
+        res.status(200).json(taskObj);
+    } catch(err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+};
+
+
 exports.getProjects = async (req, res, next) => {
     const userid = req.params.userid;
     if(!userid) {
