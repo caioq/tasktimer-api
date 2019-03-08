@@ -32,7 +32,8 @@ exports.postAddTask = async (req, res, next) => {
             user: req.user._id
         });
 
-        const newTask = await task.save();
+        let newTask = await task.save();
+        newTask.project = project;
 
         res.status(200).json({
             message: "Task created and started!",
@@ -53,7 +54,7 @@ exports.patchStopTask = async (req, res, next) => {
     try {
         const endTime = new Date().toISOString();
         let task = await Task.findOneAndUpdate({ _id: taskId }, { endTime: endTime });
-        console.log(task);
+        //console.log(task);
         res.status(200).json({
             message: "Task stopped.",
             result: task
@@ -94,15 +95,18 @@ exports.getFinishedTasks = async (req, res, next) => {
     }
     try {
         //const tasks = await Task.find({ user: userid, endTime: { $ne: null } }).populate('project');
-        const tasks = await Task.aggregate([//{ user: userid, endTime: { $ne: null } },
+        const tasks = await Task.aggregate([
             { $match: { "user": ObjectId(userid), "endTime": { $ne: null } } },
             {
                 $group: {
-                    _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$endTime" } } },
+                    _id: { date: { $dateToString: { format: "%d/%m/%Y", date: "$endTime" } } },
                     finishedTasks: { $push: "$$ROOT" }
                 }
-            }]);
-        res.status(200).json(tasks);
+            }
+        ]).sort({"finishedTasks.endTime": -1 });
+        // Populate result with project info
+        const taskpopulated = await Project.populate(tasks, { path: 'finishedTasks.project' });
+        res.status(200).json(taskpopulated);
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
