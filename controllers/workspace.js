@@ -1,5 +1,8 @@
 const Task = require('../models/task');
 const Project = require('../models/project');
+const mongoose = require('mongoose');
+
+const ObjectId = mongoose.Types.ObjectId;
 
 exports.postAddTask = async (req, res, next) => {
     const description = req.body.description;
@@ -90,7 +93,15 @@ exports.getFinishedTasks = async (req, res, next) => {
         throw error;
     }
     try {
-        const tasks = await Task.find({ user: userid, endTime: { $ne: null } }).populate('project');
+        //const tasks = await Task.find({ user: userid, endTime: { $ne: null } }).populate('project');
+        const tasks = await Task.aggregate([//{ user: userid, endTime: { $ne: null } },
+            { $match: { "user": ObjectId(userid), "endTime": { $ne: null } } },
+            {
+                $group: {
+                    _id: { date: { $dateToString: { format: "%Y-%m-%d", date: "$endTime" } } },
+                    finishedTasks: { $push: "$$ROOT" }
+                }
+            }]);
         res.status(200).json(tasks);
     } catch (err) {
         if (!err.statusCode) {
