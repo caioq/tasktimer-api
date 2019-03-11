@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const workspaceRoutes = require('./routes/workspace');
+const authRoutes = require('./routes/auth');
 const error = require('./middleware/error');
 
 const User = require('./models/user');
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/workspace', workspaceRoutes);
+app.use('/auth', authRoutes);
 app.use(error);
 
 mongoose.connect('mongodb+srv://caio-queiroz:caioq123@cluster0-f7akh.mongodb.net/tasktimer?retryWrites=true', { useNewUrlParser: true })
