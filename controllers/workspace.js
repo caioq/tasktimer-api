@@ -35,11 +35,11 @@ exports.postAddTask = async (req, res, next) => {
         let newTask = await task.save();
         newTask.project = project;
 
-        res.status(200).json({
+        res.status(201).json({
             message: "Task created and started!",
             result: newTask
         });
-
+        return newTask;
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
